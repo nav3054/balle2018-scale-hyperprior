@@ -19,32 +19,35 @@ def main(args):
 
     # Balle2018 model with lambda and metric
     model = Balle2018Hyperprior(
-        main_channels=args.main_channels,
-        hyper_channels=args.hyper_channels,
-        lambda_rd=args.lambda_val,
-        metric=args.metric,
+        main_channels = args.main_channels,
+        hyper_channels = args.hyper_channels, 
+        lambda_rd = args.lambda_val, 
+        num_scales = args.num_scales,
+        scale_min = args.scale_min, 
+        scale_max = args.scale_max,
+        metric = args.metric
     )
 
-    optimizer = tf.keras.optimizers.Adam(learning_rate=args.learning_rate)
-    model.compile(optimizer=optimizer)
+    optimizer = tf.keras.optimizers.Adam(learning_rate = args.learning_rate)
+    model.compile(optimizer = optimizer)
 
     # callbacks
     callbacks = get_callbacks(
-        model=model,
-        val_data=val_ds,
-        save_dir=args.save_dir,
-        save_every_epochs=args.save_every_epochs,
-        early_stopping_patience=args.early_stopping_patience,
-        log_images_every=args.log_images_every,
-        num_images_to_log=args.num_images_to_log,
+        model = model,
+        val_data = val_ds,
+        save_dir = args.save_dir,
+        save_every_epochs = args.save_every_epochs,
+        early_stopping_patience = args.early_stopping_patience,
+        log_images_every = args.log_images_every,
+        num_images_to_log = args.num_images_to_log,
     )
 
     # train the model
     model.fit(
         train_ds,
-        epochs=args.epochs,
-        validation_data=val_ds,
-        callbacks=callbacks,
+        epochs = args.epochs,
+        validation_data = val_ds,
+        callbacks = callbacks,
     )
 
     # save the final model
@@ -64,7 +67,7 @@ if __name__ == "__main__":
 
     # Data args
     parser.add_argument("--data_dir", type=str, required=True)
-    parser.add_argument("--patch_size", type=int, default=256)
+    parser.add_argument("--patch_size", type=int, default=256, help="Size of image patches for training and validation.")
     parser.add_argument("--batch_size", type=int, default=16)
     parser.add_argument("--patches_per_image", type=int, default=1)
     parser.add_argument("--max_images", type=int, default=None)
@@ -76,7 +79,10 @@ if __name__ == "__main__":
     parser.add_argument("--hyper_channels", type=int, default=128)
 
     # Training args
-    parser.add_argument("--epochs", type=int, default=100)
+    parser.add_argument("--epochs", type=int, default=100, help="Number of epochs")
+    parser.add_argument("--num_scales", type=int, default=64, help="Number of Gaussian scales to prepare range coding tables for.") # Used in calculation of offset and factor
+    parser.add_argument("--scale_min", type=float, default=0.11, help="Minimum value of std. dev. of Gaussians") # Used in calculation of offset and factor
+    parser.add_argument("--scale_max", type=float, default=256, help="Maximum value of std. dev. of Gaussians") # Used in calculation of offset and factor
     parser.add_argument("--learning_rate", type=float, default=1e-4)
     parser.add_argument("--lambda_val", type=float, default=0.01)
     parser.add_argument("--metric", type=str, choices=["mse", "ms-ssim"], default="mse")
