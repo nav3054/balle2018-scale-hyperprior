@@ -2,16 +2,6 @@ import tensorflow as tf
 import tensorflow_compression as tfc
 from training.losses import compute_rate_distortion_loss
 
-    model = Balle2018Hyperprior(
-        main_channels = args.main_channels,
-        hyper_channels = args.hyper_channels, 
-        lambda_rd = args.lambda_val, 
-        num_scales = args.num_scales,
-        scale_min = args.scale_min, 
-        scale_max = args.scale_max,
-        metric = args.metric
-    )
-
 class Balle2018Hyperprior(tf.keras.Model):
     def __init__(self, main_channels, hyper_channels, lambda_rd, num_scales, scale_min, scale_max, metric):
         super().__init__()
@@ -26,7 +16,7 @@ class Balle2018Hyperprior(tf.keras.Model):
         self.scale_max = scale_max
         offset = tf.math.log(scale_min)
         factor = (tf.math.log(scale_max) - tf.math.log(scale_min)) / (num_scales - 1.)
-        self.scale_fn = lambda_rd i:tf.math.exp(offset + factor * i)
+        self.scale_fn = lambda i: tf.math.exp(offset + factor * i)
         
         self.metric = metric
 
