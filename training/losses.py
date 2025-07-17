@@ -1,14 +1,14 @@
 import tensorflow as tf
 
-def compute_rate_distortion_loss(x, x_hat, y_likelihoods, z_likelihoods, lambda_rd, metric="mse"):
+def compute_rate_distortion_loss(x, x_hat, bits, side_bits, lambda_rd, metric="mse"):
     """
     Computes rate-distortion loss for end-to-end image compression.
 
     Args:
         x: Original image tensor. Shape: [B, H, W, C]
         x_hat: Reconstructed image tensor. Shape: [B, H, W, C]
-        y_likelihoods: Likelihoods from main entropy model (LocationScaleIndexedEntropyModel)
-        z_likelihoods: Likelihoods from hyperprior entropy model (ContinuousBatchedEntropyModel)
+        bits (y_likelihoods): Likelihoods from main entropy model (LocationScaleIndexedEntropyModel)
+        side_bits (z_likelihoods): Likelihoods from hyperprior entropy model (ContinuousBatchedEntropyModel)
         lambda_rd: Lagrange multiplier (λ) for distortion
         metric: "mse" or "ms-ssim"
 
@@ -19,8 +19,8 @@ def compute_rate_distortion_loss(x, x_hat, y_likelihoods, z_likelihoods, lambda_
     # Bits per pixel = -log2(p) / num_pixels
     num_pixels = tf.cast(tf.reduce_prod(tf.shape(x)[1:-1]), tf.float32)
 
-    bpp_y = tf.reduce_sum(tf.math.log(y_likelihoods)) / (-tf.math.log(2.0) * num_pixels)
-    bpp_z = tf.reduce_sum(tf.math.log(z_likelihoods)) / (-tf.math.log(2.0) * num_pixels)
+    bpp_y = tf.reduce_sum(tf.math.log(bits)) / (-tf.math.log(2.0) * num_pixels)
+    bpp_z = tf.reduce_sum(tf.math.log(side_bits)) / (-tf.math.log(2.0) * num_pixels)
     bpp = bpp_y + bpp_z
 
     if metric == "mse":
