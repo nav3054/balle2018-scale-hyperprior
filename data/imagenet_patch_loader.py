@@ -72,9 +72,9 @@ def create_train_val_test_datasets(
     patch_size,
     batch_size,
     patches_per_image=1,
-    val_split,
-    test_split,
-    max_images,
+    val_split=0.1,
+    test_split=0.1,
+    max_images=None,
     seed=0
 ):
     if input_path.endswith(".tar"):
