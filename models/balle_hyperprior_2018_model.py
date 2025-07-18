@@ -7,14 +7,22 @@ class Balle2018Hyperprior(tf.keras.Model):
         super().__init__()
 
         downsample_factor = 16
+        self.num_scales = num_scales
         self.lambda_rd = lambda_rd
         self.main_channels = main_channels
         self.hyper_channels = hyper_channels
         self.downsample_factor = downsample_factor
 
+        scale_min = tf.convert_to_tensor(scale_min, dtype=tf.float32)
+        scale_max = tf.convert_to_tensor(scale_max, dtype=tf.float32)
+
         self.scale_min = scale_min
         self.scale_max = scale_max
         offset = tf.math.log(scale_min)
+
+        #scale_min = tf.convert_to_tensor(scale_min, dtype=tf.float32)
+        #scale_max = tf.convert_to_tensor(scale_max, dtype=tf.float32)
+
         factor = (tf.math.log(scale_max) - tf.math.log(scale_min)) / (num_scales - 1.)
         self.scale_fn = lambda i: tf.math.exp(offset + factor * i)
         
@@ -57,13 +65,13 @@ class Balle2018Hyperprior(tf.keras.Model):
         ])
 
         # trainable scale function params
-        self.offset = tf.Variable(-1.5, dtype=tf.float32, trainable=True, name="scale_offset")
-        self.factor = tf.Variable(0.175, dtype=tf.float32, trainable=True, name="scale_factor")
+        #self.offset = tf.Variable(-1.5, dtype=tf.float32, trainable=True, name="scale_offset")
+        #self.factor = tf.Variable(0.175, dtype=tf.float32, trainable=True, name="scale_factor")
 
         
         # ENTROPY MODELS
         self.main_entropy_model = tfc.LocationScaleIndexedEntropyModel(
-            prior_fn = tfc.NoisyNormal(),
+            prior_fn = tfc.NoisyNormal,
             num_scales = self.num_scales,
             scale_fn = self.scale_fn,
             coding_rank = 3,
@@ -71,7 +79,7 @@ class Balle2018Hyperprior(tf.keras.Model):
         )
 
         self.hyperprior_entropy_model = tfc.ContinuousBatchedEntropyModel(
-            prior_fn = tfc.NoisyDeepFactorized(batch_shape=(hyper_channels,)),
+            prior = tfc.NoisyDeepFactorized(batch_shape=(hyper_channels,)),
             coding_rank = 3,
             compression = True
         )
@@ -84,11 +92,17 @@ class Balle2018Hyperprior(tf.keras.Model):
         z_hat, side_bits = self.hyperprior_entropy_model(z, training=training)
         # side_bits = number of bits needed to transmit z_hat
 
-        hyper_output = self.hyp_decoder(z_hat)
+        #hyper_output = self.hyp_decoder(z_hat)
         # hyper_output ("indexes" in balle-tf implementation) = used to predict scale parameters (i.e., standard deviations) for the conditional entropy model of y
         #loc, scale = tf.split(hyper_output, num_or_size_splits=2, axis=-1)
 
-        y_hat, bits = self.main_entropy_model(y, indexes=hyper_output, training=training)
+        ####################
+        hyper_output = self.hyp_decoder(z_hat)  # (B, H, W, 384)
+        scale_indexes = hyper_output[..., :self.main_channels]  # (B, H, W, 192)
+        y_hat, bits = self.main_entropy_model(y, scale_indexes, training=training)
+        ####################
+        
+        #y_hat, bits = self.main_entropy_model(y, hyper_output, training=training)
         # bits = number of bits needed to transmit y_hat
         x_hat = self.main_decoder(y_hat)
 

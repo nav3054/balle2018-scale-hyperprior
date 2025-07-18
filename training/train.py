@@ -53,10 +53,10 @@ def main(args):
     # save the final model
     final_path = os.path.join(args.save_dir, "final_model")
     model.save(final_path)
-    print(f"✅ Final model saved to: {final_path}")
+    print(f"Final model saved to: {final_path}")
 
     # evaluate on test set
-    print("\n📊 Evaluating on test set...")
+    print("\nEvaluating on test set...")
     results = model.evaluate(test_ds, return_dict=True)
     print(f"Test Loss: {results['loss']:.4f}")
     print(f"Test BPP: {results['bpp']:.4f}")
