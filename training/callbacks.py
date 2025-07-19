@@ -55,7 +55,7 @@ class ImageLoggingCallback(tf.keras.callbacks.Callback):
 
         # If images have channel last, matplotlib expects H x W x C
         return combined
-
+    '''
     def _add_label(self, image, label):
         # Add label text on top of the image using matplotlib
         import matplotlib.patches as patches
@@ -75,6 +75,25 @@ class ImageLoggingCallback(tf.keras.callbacks.Callback):
         # Normalize to [0,1]
         img_with_label = img_with_label.astype(np.float32) / 255.0
         return img_with_label
+    '''
+    def _add_label(self, image, label):
+        import matplotlib.patches as patches
+    
+        fig, ax = plt.subplots(figsize=(image.shape[1] / 100, image.shape[0] / 100), dpi=100)
+        ax.imshow(image)
+        ax.axis('off')
+        ax.text(5, 15, label, color='white', fontsize=7, weight='bold',
+                bbox=dict(facecolor='black', alpha=0.7, pad=2))
+        
+        fig.canvas.draw()
+        img_with_label = np.frombuffer(fig.canvas.get_renderer().buffer_rgba(), dtype=np.uint8)
+        img_with_label = img_with_label.reshape(fig.canvas.get_width_height()[::-1] + (4,))
+        img_with_label = img_with_label[:, :, :3]  # Remove alpha channel if needed
+        plt.close(fig)
+    
+        img_with_label = img_with_label.astype(np.float32) / 255.0
+        return img_with_label
+
 
 
 def get_callbacks(model, val_data, save_dir,
