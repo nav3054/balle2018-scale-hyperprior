@@ -53,6 +53,8 @@ def main(args):
     # save the final model
     final_path = os.path.join(args.save_dir, "final_model")
     model.save(final_path)
+    # final_path = os.path.join(args.save_dir, "final_model")
+    # model.save(final_path, save_format="tf")
     print(f"Final model saved to: {final_path}")
 
     # evaluate on test set
