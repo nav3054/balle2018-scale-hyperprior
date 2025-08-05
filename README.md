@@ -1,4 +1,6 @@
-# balle2018-scale-hyperprior
+<!-- # balle2018-scale-hyperprior -->
+
+# Variational Image Compression with a Scale Hyperprior (Ballé et al., 2018)
 
 This repository contains an unofficial TensorFlow 2.x implementation of the paper [Variational Image Compression with a Scale Hyperprior](https://arxiv.org/pdf/1802.01436) by Ballé et al. (2018), a foundational work in the field of learned image compression.
 
